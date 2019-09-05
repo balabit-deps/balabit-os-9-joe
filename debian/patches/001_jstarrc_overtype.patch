@@ -1,0 +1,22 @@
+Description: fix jstarrc overtype error to make the Ins key work in jstar
+ Fix the Ins key for jstar users by replacing the obsolete marker
+ "overtype" with "overwrite" in rc/jstarrc.in
+Author: Adam Borowski
+Bug-Debian: http://bugs.debian.org/508797
+Last-Update: 2010-11-13
+
+Index: joe-4.1/rc/jstarrc.in
+===================================================================
+--- joe-4.1.orig/rc/jstarrc.in	2015-09-04 22:15:55.000000000 +0200
++++ joe-4.1/rc/jstarrc.in	2016-01-31 18:01:34.000000000 +0100
+@@ -977,8 +977,8 @@
+ insf		^K r
+ macros		^[ d		Dump macros
+ macros		^[ ^D
+-mode,"overtype",rtn	^V		Insert/Overtype
+-mode,"overtype",rtn	.kI
++mode,"overwrite",rtn	^V		Insert/Overtype
++mode,"overwrite",rtn	.kI
+ lindent		^K ,		Indent to left
+ line		^Q I		Goto line no.
+ line		^Q ^I

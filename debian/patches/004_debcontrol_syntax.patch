@@ -1,0 +1,23 @@
+Description: include syntax highlighting rules for Debian control files
+ matches control and copyright files found in Debian source packages
+Author: Josip Rodin
+Bug-Debian: http://bugs.debian.org/819578
+Last-Update: 2016-11-06
+
+Index: joe-4.3/rc/ftyperc
+===================================================================
+--- joe-4.3/rc/ftyperc~	2016-08-17 15:55:24.000000000 +0200
++++ joe-4.3/rc/ftyperc	2016-11-06 14:35:52.638477740 +0100
+@@ -628,6 +628,12 @@
+ -pound_comment
+ -syntax debian
+ 
++ debcontrol
++[control]
++*control
++*copyright
++-syntax debcontrol
++
+  Java's .properties
+ [java_properties]
+ *.properties

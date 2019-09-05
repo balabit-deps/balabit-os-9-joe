@@ -1,0 +1,33 @@
+Description: make sure setlocale is detected
+ unbreaks langinfo.h CODESET detection by making sure we load that first
+ (previously updated 2008-12-06)
+Author: Josip Rodin
+Bug-Debian: http://bugs.debian.org/453310
+Last-Update: 2016-01-31
+
+Index: joe-4.1/joe/charmap.c
+===================================================================
+--- joe-4.1.orig/joe/charmap.c	2015-09-04 21:24:35.000000000 +0200
++++ joe-4.1/joe/charmap.c	2016-01-31 18:01:34.000000000 +0100
+@@ -20,16 +20,16 @@
+ #undef HAVE_SETLOCALE
+ #endif
+ 
+-/* If it looks old, forget it */
+-#ifndef CODESET
+-#undef HAVE_SETLOCALE
+-#endif
+-
+ #if defined(HAVE_LOCALE_H) && defined(HAVE_SETLOCALE)
+ #	include <locale.h>
+ #       include <langinfo.h>
+ #endif
+ 
++/* If we didn't find a CODESET in locale.h/langinfo.h, forget about setlocale */
++#ifndef CODESET
++#undef HAVE_SETLOCALE
++#endif
++
+ /* nl_langinfo(CODESET) is broken on many systems.  If HAVE_SETLOCALE is undefined,
+    JOE uses a limited internal version instead */
+ 

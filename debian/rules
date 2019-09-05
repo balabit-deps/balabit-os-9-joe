@@ -1,0 +1,77 @@
+#!/usr/bin/make -f
+
+tmp := $(CURDIR)/debian/joe
+docdir := $(tmp)/usr/share/doc/joe
+
+include /usr/share/dpkg/architecture.mk
+DPKG_EXPORT_BUILDFLAGS = 1
+include /usr/share/dpkg/buildflags.mk
+
+CFLAGS += -g
+ifeq "$(findstring noopt,$(DEB_BUILD_OPTIONS))" ""
+CFLAGS += -O2
+endif
+
+ifneq "$(DEB_BUILD_ARCH)" "$(DEB_HOST_ARCH)"
+CONFIGURE_FLAGS += --build=$(DEB_BUILD_GNU_TYPE) --host=$(DEB_HOST_GNU_TYPE)
+endif
+
+build: build-indep build-arch
+
+build-indep:
+
+build-arch: config.status joe/joe
+
+config.status:
+	dh_autoreconf
+	CFLAGS="$(CFLAGS)" ./configure --sysconfdir=/etc --prefix=/usr \
+          --mandir='$${datadir}/man' $(CONFIGURE_FLAGS)
+
+joe/joe: joe/main.c
+	$(MAKE)
+
+clean: checkroot
+	[ ! -f Makefile ] || $(MAKE) distclean
+	rm -rf $(tmp) debian/*~ debian/substvars* debian/files*
+	dh_autoreconf_clean
+	rm -f debian/*debhelper.log
+
+install: build checkroot
+	rm -rf $(tmp)
+	$(MAKE) DESTDIR=$(tmp) install
+ifeq "$(findstring nostrip,$(DEB_BUILD_OPTIONS))" ""
+	$(DEB_HOST_GNU_TYPE)-strip --remove-section=.comment --remove-section=.note $(tmp)/usr/bin/joe
+endif
+	rm -f $(tmp)/usr/bin/termidx
+	gzip -9n $(tmp)/usr/share/man/man1/joe.1
+	gzip -9n $(tmp)/usr/share/man/ru/man1/joe.1
+	for i in jmacs jstar rjoe jpico; do \
+          ln -s joe.1.gz $(tmp)/usr/share/man/man1/$$i.1.gz; \
+        done
+
+binary: binary-indep binary-arch
+
+binary-indep:
+
+binary-arch: install
+	install -m 755 -d $(tmp)/usr/share/doc/joe
+	rm -rf $(tmp)/etc/joe/doc
+	gzip -9cn debian/changelog > $(tmp)/usr/share/doc/joe/changelog.Debian.gz
+	gzip -9cn $(tmp)/usr/share/doc/joe/ChangeLog > $(tmp)/usr/share/doc/joe/changelog.gz
+	rm -f $(tmp)/usr/share/doc/joe/ChangeLog
+	install -m 644 debian/help.pl.txt $(tmp)/usr/share/doc/joe/
+	install -m 644 debian/copyright debian/README.Debian $(tmp)/usr/share/doc/joe
+	install -m 755 -d $(tmp)/DEBIAN
+	install -m 644 debian/conffiles $(tmp)/DEBIAN
+	install -m 755 debian/preinst debian/postinst debian/prerm debian/postrm $(tmp)/DEBIAN
+	install -m 755 -d $(tmp)/usr/share/menu
+	install -m 644 debian/menu $(tmp)/usr/share/menu/joe
+	install -m 644 debian/debcontrol.jsf $(tmp)/usr/share/joe/syntax/debcontrol.jsf
+	dpkg-shlibdeps $(tmp)/usr/bin/joe
+	dpkg-gencontrol -P$(tmp) -isp
+	chown -R root.root $(tmp)
+	chmod -R go=rX,u+rw,a-s $(tmp)
+	dpkg-deb --build $(tmp) ..
+
+checkroot: debian/rules
+	test "`id -u`" -eq "0"

@@ -1,0 +1,61 @@
+# JOE syntax highlight file for debian/control
+# 2016-02-10 Thomas Goirand <zigo@debian.org>
+
+=Idle
+=Error          red bold
+=Comment	green
+=Field		cyan
+=Versnum	cyan bold
+=Var            magenta
+
+# Start in headers. We know we're out at the first blank line.
+:start Idle
+        "#"     comment
+        *       fieldname       noeat
+
+:fieldname Field
+#	*	main
+        "#"     comment
+        " "     main            noeat
+#        "a-zA-Z_"	feildname
+
+:field Field
+        "#"     comment
+        ":"     main
+        "\n"    fieldname       noeat
+        *       field
+
+:main Idle
+        "#"     comment
+        "$"	subst		recolor=-1
+        *       main
+	"("	versnum		noeat
+        " "     main
+        "\n"    fieldname       noeat# strings
+#        "Section:" fieldname
+#done
+
+:versnum Versnum
+	"#"	comment
+	".\ \:=()><~\+\-0-9a-z"	versnum
+	")"	main
+	"\n"	fieldname	noeat
+
+:comment Comment
+  *             comment         recolor=-2
+  "\n"          main
+
+:subst Var
+        *               main noeat
+        "("             main    recolor=-2 # don't try for now
+        "{"             subst_brack
+        "a-zA-Z_"       subst_name
+        "0-9*@?\-$_!#"  main
+
+:subst_name Var
+        *               main            noeat recolor=-1
+        "a-zA-Z0-9_"    subst_name
+
+:subst_brack Var
+        *               subst_brack
+        "}"             main
